@@ -13,6 +13,13 @@ DOCKER_ARGS :=
 PYTEST_ARGS :=
 DOTENV := $(PWD)/.env
 
+# Sets a values file to use with Zenko install
+ifndef OFFLINE
+EVE_KUBE_VALUES := ../eve/ci-online-values.yaml
+else
+EVE_KUBE_VALUES := ../eve/ci-offline-values.yaml
+endif
+
 BUILDDIR := build
 # These are for dumping logs, but they're really long so store them as variables
 E2E_LOG_PODS := {range .items[?(@.metadata.annotations.helm\.sh\/hook)]}{@.metadata.name}{"\n"}{end}
@@ -112,7 +119,7 @@ build-latest: | build-latest-backbeat build-latest-cloudserver
 
 install-tiller:
 ifndef NO_INSTALL
-	$(V)$(HELM) init --tiller-namespace $(HELM_NAMESPACE) --wait
+	$(V)$(HELM) init --wait
 endif
 .PHONY: install-tiller
 
@@ -128,7 +135,6 @@ ifndef NO_SIM
 	$(V)$(GIT) clone git@github.com:scality/orbit-simulator.git build/orbit-simulator && \
 	$(HELM) upgrade ciutil \
 		--namespace $(HELM_NAMESPACE) \
-        --tiller-namespace $(HELM_NAMESPACE) \
         --install build/orbit-simulator/charts/orbit-simulator \
         --set simulator.shim.cloudserver_release=$(ZENKO_HELM_RELEASE) \
         --wait $(shell ../eve/workers/ci_env.sh set)
@@ -150,7 +156,7 @@ ifndef NO_INSTALL
 	$(HELM) upgrade $(ZENKO_HELM_RELEASE) \
 		--namespace $(HELM_NAMESPACE) \
 		--install ../kubernetes/zenko \
-		-f ../eve/ci-values.yaml
+		-f $(EVE_KUBE_VALUES)
 endif
 .PHONY: install-zenko
 
@@ -158,9 +164,8 @@ install-latest-zenko: | build-latest
 ifndef NO_INSTALL
 	$(HELM) upgrade $(ZENKO_HELM_RELEASE) \
 		--namespace $(HELM_NAMESPACE) \
-                --tiller-namespace $(HELM_NAMESPACE) \
 		--install ../kubernetes/zenko \
-		-f ../eve/ci-values.yaml \
+		-f $(EVE_KUBE_VALUES) \
         --set backbeat.image.repository=$(BACKBEAT_IMAGE) \
         --set-string backbeat.image.tag='$(BACKBEAT_TAG)' \
         --set cloudserver.image.repository=$(CLOUDSERVER_IMAGE) \
@@ -218,7 +223,9 @@ test-local:
 	make NO_SIM=true NO_INSTALL=true -e test
 test-latest-local:
 	make NO_SIM=true NO_INSTALL=true -e test-latest
-.PHONY: test-local test-latest-local
+test-offline:
+	make NO_SIM=true OFFLINE=true -e test
+.PHONY: test-local test-latest-local test-offline
 
 trigger-cosbench:
 	$(eval COSBENCH_POD := $(shell kubectl get pods | awk '/cosbench-controller/{print $$1}'))
