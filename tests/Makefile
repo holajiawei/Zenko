@@ -14,10 +14,11 @@ PYTEST_ARGS :=
 DOTENV := $(PWD)/.env
 
 # Sets a values file to use with Zenko install
+# Offline values get templated into a new file under `make template-yaml`
 ifndef OFFLINE
-EVE_KUBE_VALUES := ../eve/ci-online-values.yaml
+EVE_KUBE_VALUES := ../eve/online.yaml
 else
-EVE_KUBE_VALUES := ../eve/ci-offline-values.yaml
+EVE_KUBE_VALUES := offline.yaml
 endif
 
 BUILDDIR := build
@@ -156,6 +157,7 @@ ifndef NO_INSTALL
 	$(HELM) upgrade $(ZENKO_HELM_RELEASE) \
 		--namespace $(HELM_NAMESPACE) \
 		--install ../kubernetes/zenko \
+                -f ../eve/ci-global-values.yaml \
 		-f $(EVE_KUBE_VALUES)
 endif
 .PHONY: install-zenko
@@ -165,6 +167,7 @@ ifndef NO_INSTALL
 	$(HELM) upgrade $(ZENKO_HELM_RELEASE) \
 		--namespace $(HELM_NAMESPACE) \
 		--install ../kubernetes/zenko \
+                -f ../eve/ci-global-values.yaml \
 		-f $(EVE_KUBE_VALUES) \
         --set backbeat.image.repository=$(BACKBEAT_IMAGE) \
         --set-string backbeat.image.tag='$(BACKBEAT_TAG)' \
@@ -210,6 +213,10 @@ run-tests: | build-tests
 		$(shell ../eve/workers/ci_env.sh env) || (echo "Tests have failed" ; kubectl get pods -L redis-role ; exit 1) >&2
 .PHONY: run-tests
 
+template-yaml:
+	envsubst ../eve/offline.yaml > $(EVE_KUBE_VALUES)
+.PHONY: template-yaml
+
 test-flaky:
 	$(eval NODE_TEST_TAGS = is:flaky)
 	$(call run-tests)
@@ -223,7 +230,7 @@ test-local:
 	make NO_SIM=true NO_INSTALL=true -e test
 test-latest-local:
 	make NO_SIM=true NO_INSTALL=true -e test-latest
-test-offline:
+test-offline: template-yaml
 	make NO_SIM=true OFFLINE=true -e test
 .PHONY: test-local test-latest-local test-offline
 
