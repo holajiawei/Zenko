@@ -111,7 +111,7 @@ spec:
           secret:
             secretName: {{ template "cloudserver.fullname" . }}-proxy
         {{- end }}
-        {{- if .Values.kmip.enabled -}}
+        {{- if .Values.kmip.enabled }}
         - name: kmip-cert
           secret:
             secretName: {{ template "cloudserver.fullname" . }}-kmip-cert
