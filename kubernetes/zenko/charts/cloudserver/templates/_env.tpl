@@ -92,7 +92,7 @@ env:
   {{- end }}
   {{- end }}
   {{- end }}
-  {{- if .Values.kmip.enabled -}}
+  {{- if .Values.kmip.enabled }}
   - name: S3KMS
     value: kmip
   - name: S3KMIP_PORT
