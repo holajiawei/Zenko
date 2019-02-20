@@ -122,15 +122,15 @@ stages:
     worker:
       type: local
     steps:
-    - TriggerStages:
-        name: Build documentation
-        haltOnFailure: true
-        stage_names:
-        - build-doc
+#    - TriggerStages:
+#        name: Build documentation
+#        haltOnFailure: true
+#        stage_names:
+#        - build-doc
     - TriggerStages:
         name: trigger all the tests
         stage_names:
-        - online-zenko
+#        - online-zenko
         - offline-zenko
 
   build-doc:
