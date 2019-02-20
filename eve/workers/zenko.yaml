@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: aggressor
-    image: zenko/zenko-releng:0.0.8
+    image: zenko/zenko-releng:0.0.9
     imagePullPolicy: Always
     resources:
       requests:
