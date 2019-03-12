@@ -13,6 +13,7 @@ RUN apk add -U \
     python3-dev \
     musl-dev \
     curl \
+    mongodb \
     openssl-dev && \
     mkdir -p /usr/local/bin/tests/node_tests
 
@@ -30,6 +31,8 @@ RUN python3 -m pip install -r /tmp/requirements.txt tox kubernetes && \
 
 COPY ./node_tests/npm_chain.sh ./docker-entrypoint.sh ./wait_for_ceph.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/npm_chain.sh /usr/local/bin/docker-entrypoint.sh /usr/local/bin/wait_for_ceph.sh
+
+RUN python3 -m pip install awscli
 
 # Copy Tests
 COPY . /usr/local/bin/tests/

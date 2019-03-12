@@ -128,11 +128,13 @@ endif
 
 install-orbit-simulator: | builddir
 ifndef NO_SIM
-	$(V)$(GIT) clone git@github.com:scality/orbit-simulator.git build/orbit-simulator && \
+	$(V)$(GIT) clone git@github.com:scality/orbit-simulator.git build/orbit-simulator -b feature/ZENKO-1507-add-nfs-location && \
 	$(HELM) upgrade ciutil \
 		--namespace $(HELM_NAMESPACE) \
         --tiller-namespace $(HELM_NAMESPACE) \
         --install build/orbit-simulator/charts/orbit-simulator \
+		--set simulator.image.repository=ssalaues/orbit-sim \
+		--set simulator.image.tag=nfs \
         --set simulator.shim.cloudserver_release=$(ZENKO_HELM_RELEASE) \
         --wait $(shell ../eve/workers/ci_env.sh set)
 endif
