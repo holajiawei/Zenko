@@ -23,6 +23,6 @@ if [ "$?" -ne "0" ]; then
 fi
 
 # Run the tests
-enter_and_run node_tests "npm_chain.sh test_ingestion_s3c"
+enter_and_run node_tests "npm_chain.sh test_ingestion_s3c test_oob_s3c"
 
 exit "$EXIT_STATUS"

@@ -3,39 +3,27 @@ const async = require('async');
 const crypto = require('crypto');
 
 const { scalityS3Client, ringS3Client } = require('../s3SDK');
+const ReplicationUtility = require('./ReplicationUtility');
 
-class IngestionUtility {
+class IngestionUtility extends ReplicationUtility {
     constructor(s3, ringS3C) {
-        this.s3 = s3;
+        super(s3);
         this.ringS3C = ringS3C;
     }
 
-    _compareObjectBody(body1, body2) {
-        const digest1 = crypto.createHash('md5').update(body1).digest('hex');
-        const digest2 = crypto.createHash('md5').update(body2).digest('hex');
-        assert.strictEqual(digest1, digest2);
-    }
-
-
-    _deleteVersionList(versionList, bucketName, cb) {
-        async.each(versionList, (versionInfo, next) =>
-            this.deleteObject(bucketName, versionInfo.Key,
-                versionInfo.VersionId, next), cb);
-    }
-
-    putObject(bucketName, objectName, content, cb) {
-        this.s3.putObject({
-            Bucket: bucketName,
-            Key: objectName,
-            Body: content,
-        }, cb);
-    }
-
-    deleteObject(bucketName, key, versionId, cb) {
-        this.s3.deleteObject({
+    putObjectTagging(bucketName, key, versionId, cb) {
+        this.s3.putObjectTagging({
             Bucket: bucketName,
             Key: key,
             VersionId: versionId,
+            Tagging: {
+                TagSet: [
+                    {
+                        Key: 'object-tag-key',
+                        Value: 'object-tag-value',
+                    },
+                ],
+            },
         }, cb);
     }
 
@@ -54,7 +42,7 @@ class IngestionUtility {
     }
 
     createIngestionBucket(bucketName, ingestionSrcLocation, cb) {
-        async.waterfall([
+        async.series([
             next => this.s3.createBucket({
                 Bucket: bucketName,
                 CreateBucketConfiguration: {
@@ -110,36 +98,6 @@ class IngestionUtility {
         () => objectExists, cb);
     }
 
-    deleteAllVersions(bucketName, keyPrefix, cb) {
-        this.s3.listObjectVersions({ Bucket: bucketName }, (err, data) => {
-            if (err) {
-                return cb(err);
-            }
-            let versions = data.Versions;
-            let deleteMarkers = data.DeleteMarkers;
-            // If replicating to a multiple backend bucket, we only want to
-            // remove versions that we have put with our tests.
-            if (keyPrefix) {
-                versions = versions.filter(version =>
-                    version.Key.startsWith(keyPrefix));
-                deleteMarkers = deleteMarkers.filter(marker =>
-                    marker.Key.startsWith(keyPrefix));
-            }
-            return async.series([
-                next => this._deleteVersionList(deleteMarkers, bucketName,
-                    next),
-                next => this._deleteVersionList(versions, bucketName, next),
-            ], err => cb(err));
-        });
-    }
-
-    deleteVersionedBucket(bucketName, cb) {
-        return async.series([
-            next => this.deleteAllVersions(bucketName, undefined, next),
-            next => this.s3.deleteBucket({ Bucket: bucketName }, next),
-        ], err => cb(err));
-    }
-
     compareObjectsRINGS3C(srcBucket, destBucket, key, cb) {
         return async.series([
             next => this.waitUntilIngested(destBucket, key, undefined,
@@ -157,11 +115,29 @@ class IngestionUtility {
             this._compareObjectBody(srcData.Body, destData.Body);
             assert.deepStrictEqual(srcData.Metadata, destData.Metadata);
             assert.strictEqual(srcData.ETag, destData.ETag);
-            assert.strictEqual(srcData.WebsiteRedirectLocation,
-                destData.WebsiteRedirectLocation);
             assert.strictEqual(srcData.ContentType, destData.ContentType);
             assert.strictEqual(srcData.VersionId, destData.VersionId);
-            // TODO: should LastModified be equal?
+            assert.strictEqual(srcData.LastModified.toString(),
+                destData.LastModified.toString());
+            return cb();
+        });
+    }
+
+    compareObjectTagsRINGS3C(srcBucket, destBucket, key, zenkoVersionId,
+        s3cVersionId, cb) {
+        return async.series([
+            next => this.waitUntilIngested(srcBucket, key, zenkoVersionId, next),
+            next => this._setS3Client(this.ringS3C).getObjectTagging(srcBucket,
+                key, zenkoVersionId, next),
+            next => this._setS3Client(this.s3).getObjectTagging(destBucket, key,
+                zenkoVersionId, next),
+        ], (err, data) => {
+            if (err) {
+                return cb(err);
+            }
+            const srcData = data[1];
+            const destData = data[2];
+            assert.deepStrictEqual(srcData.TagSet, destData.TagSet);
             return cb();
         });
     }
