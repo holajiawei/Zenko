@@ -34,7 +34,10 @@ EVE_URL = EVE_BASE_URL%BUILD_REPO
 
 SLACK_API_BASE = 'https://slack.com/api/%s'
 # SLACK_CHAN = 'CFYM0GWJ0' # Dev channel
-SLACK_CHAN = 'CFCCE4X7F' # sf-devops
+SLACK_CHAN_DEVOPS = 'CFCCE4X7F' # sf-devops
+SLACK_CHAN_HIPPO = 'CFD81UFEK'
+
+CROSSPOST_TO_HIPPO = os.environ.get('CROSSPOST_TO_HIPPO', '').strip() != ''
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -112,6 +115,7 @@ class EveClient:
     def __call__(self, *args, **kwargs):
         return self._request(self.session, *args, **kwargs)
 
+    @poll('Waiting for build %s to finish...'%BUILD_NUMBER)
     def check_status(self, buildnum=None, buildid=None):
         if buildid is not None:
             uri = '/builds/%s'%buildid
@@ -273,10 +277,16 @@ class BuildMessage:
                 em=self._builder_emoji
             ),
             'channel': self._channel,
-            'ts': self._main_ts,
-            'as_user': True
         }
-        success, resp = slack('chat.update', **data)
+        if self._main_ts is None:
+            method = 'chat.postMessage'
+        else:
+            data['ts'] = self._main_ts,
+            data['as_user'] = True
+            method = 'chat.update'
+        success, resp = slack(method, **data)
+        if success and self._main_ts is None:
+            self._main_ts = resp['ts']
         return success
 
     def report_failures(self, title, num, failures):
@@ -316,7 +326,7 @@ class BuildMessage:
 
 if __name__ == '__main__':
     if args.notify:
-        bm = BuildMessage(SLACK_CHAN)
+        bm = BuildMessage(SLACK_CHAN_DEVOPS)
         msg_ts = bm.post_start(BUILD_NAME, BUILD_NUMBER)
         if msg_ts is not None:
             print str(msg_ts)
@@ -335,7 +345,7 @@ if __name__ == '__main__':
         print 'Waiting for build %s to finish...'%BUILD_NUMBER
         status = eve.check_status(buildnum=BUILD_NUMBER)
         print 'Build %s has finished'%BUILD_NUMBER
-        bm = BuildMessage(SLACK_CHAN, BUILD_MSG_TS)
+        bm = BuildMessage(SLACK_CHAN_DEVOPS, BUILD_MSG_TS)
         if status:
             bm.post_success()
         else:
@@ -346,4 +356,9 @@ if __name__ == '__main__':
                         failed_tests[stage].append(err)
             bm.post_failure()
             bm.report_failures(BUILD_NAME, BUILD_NUMBER, failed_tests)
+            if CROSSPOST_TO_HIPPO:
+                bm_hippo = BuildMessage(SLACK_CHAN_HIPPO)
+                bm_hippo.update(BUILD_NAME, BUILD_NUMBER)
+                bm_hippo.post_failure()
+                bm_hippo.report_failures(BUILD_NAME, BUILD_NUMBER, failed_tests)
         bm.update(BUILD_NAME, BUILD_NUMBER)
