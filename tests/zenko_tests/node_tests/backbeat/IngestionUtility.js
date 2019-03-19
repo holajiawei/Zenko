@@ -131,18 +131,30 @@ class IngestionUtility extends ReplicationUtility {
                 destData.WebsiteRedirectLocation);
             assert.strictEqual(srcData.ContentType, destData.ContentType);
             assert.strictEqual(srcData.VersionId, destData.VersionId);
-            // TODO: should LastModified be equal?
+            assert.strictEqual(srcData.LastModified.toString(),
+                destData.LastModified.toString());
             return cb();
         });
     }
-    //
-    // compareObjectTagsRINGS3C(srcBucket, destBucket, key, zenkoVersionId,
-    //     s3cVersionId, cb) {
-    //     return async.series([
-    //         next => this.waitUntilIngested(srcBucket, key, zenkoVersionId, next),
-    //         next => this.
-    //     ])
-    // }
+
+    compareObjectTagsRINGS3C(srcBucket, destBucket, key, zenkoVersionId,
+        s3cVersionId, cb) {
+        return async.series([
+            next => this.waitUntilIngested(srcBucket, key, zenkoVersionId, next),
+            next => this._setS3Client(this.ringS3C).getObjectTagging(srcBucket,
+                key, zenkoVersionId, next),
+            next => this._setS3Client(this.s3).getObjectTagging(destBucket, key,
+                zenkoVersionId, next),
+        ], (err, data) => {
+            if (err) {
+                return cb(err);
+            }
+            const srcData = data[1];
+            const destData = data[2];
+            assert.deepStrictEqual(srcData.TagSet, destData.TagSet);
+            return cb();
+        });
+    }
 }
 
 module.exports = IngestionUtility;
