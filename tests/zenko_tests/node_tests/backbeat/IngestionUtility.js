@@ -81,14 +81,14 @@ class IngestionUtility extends ReplicationUtility {
                 if (err && err.code !== expectedCode) {
                     return callback(err);
                 }
-                ingested = err && err.code === expectedCode;
+                ingested = err === null;
                 if (!ingested) {
                     console.log('not ingested, trying again')
                     return setTimeout(callback, 2000);
                 }
                 return callback();
             }),
-        () => !ingested, cb);
+        () => ingested, cb);
     }
 
     waitUntilDeleted(bucketName, key, cb) {
