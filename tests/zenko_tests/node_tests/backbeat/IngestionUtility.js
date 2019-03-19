@@ -77,6 +77,7 @@ class IngestionUtility extends ReplicationUtility {
                 Bucket: bucketName,
                 Key: key,
             }, (err, data) => {
+                console.log('getting object,',  err, data);
                 if (err && err.code !== expectedCode) {
                     return callback(err);
                 }
