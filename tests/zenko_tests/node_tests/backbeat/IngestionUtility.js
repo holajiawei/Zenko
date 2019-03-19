@@ -70,7 +70,7 @@ class IngestionUtility extends ReplicationUtility {
 
     waitUntilIngested(bucketName, key, versionId, cb) {
         console.log('getting object', bucketName, key, versionId);
-        let ingested = false;
+        let status;
         const expectedCode = 'NoSuchKey';
         return async.doWhilst(callback =>
             this.s3.getObject({
@@ -81,14 +81,14 @@ class IngestionUtility extends ReplicationUtility {
                 if (err && err.code !== expectedCode) {
                     return callback(err);
                 }
-                ingested = err === null;
-                if (!ingested) {
+                status = err === null;
+                if (!status) {
                     console.log('not ingested, trying again')
                     return setTimeout(callback, 2000);
                 }
                 return callback();
             }),
-        () => ingested, cb);
+        () => !status, cb);
     }
 
     waitUntilDeleted(bucketName, key, cb) {
