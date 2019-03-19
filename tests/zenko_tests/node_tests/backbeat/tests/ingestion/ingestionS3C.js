@@ -47,6 +47,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
             // 0-byte object
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY_ZERO_BYTE, null, next),
+            // create ingestion bucket
             next => scalityUtils.createIngestionBucket(
                 INGESTION_DEST_BUCKET, location, next),
             // compare object
