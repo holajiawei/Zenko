@@ -8,7 +8,7 @@ const IngestionUtility = require('../../IngestionUtility');
 
 const scalityUtils = new IngestionUtility(scalityS3Client, ringS3Client);
 const ringS3CUtils = new IngestionUtility(ringS3Client);
-const ingestionSrcBucket = process.env.RING_S3C_INGESTION_SRC_BUCKET_NAME;
+const ingestionSrcBucket = `ingestion-${process.env.HELM_NAMESPACE}`;
 const srcLocation = process.env.RING_S3C_BACKEND_SOURCE_LOCATION;
 const location = `${srcLocation}:ingest`;
 // eslint-disable-next-line
@@ -31,14 +31,11 @@ describe('Ingesting existing data from RING S3C bucket', () => {
             next => scalityUtils.deleteVersionedBucket(
                 INGESTION_DEST_BUCKET, next),
             next => ringS3CUtils.deleteAllVersions(ingestionSrcBucket,
-                KEY_PREFIX, next),
-        ], (err, data) => {
-            console.log('err in cleanup AfterEach', err, data);
-            return done(err, data);
-        });
+                null, next),
+        ], done);
     });
 
-    it('should ingest an object', function itF(done) {
+    it('should ingest an object', done => {
         return async.series([
             // object
             next => ringS3CUtils.putObject(ingestionSrcBucket,
@@ -52,7 +49,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
         ], done);
     });
 
-    it('should ingest a 0-byte object', function itF(done) {
+    it('should ingest a 0-byte object', done => {
         return async.series([
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, null, next),
@@ -63,7 +60,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
         ], done);
     });
 
-    it.skip('should ingest object tags', function itF(done) {
+    it.skip('should ingest object tags', done => {
         return async.series([
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, Buffer.alloc(1), next),
