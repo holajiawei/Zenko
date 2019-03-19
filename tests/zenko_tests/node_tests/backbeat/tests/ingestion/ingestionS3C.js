@@ -8,7 +8,7 @@ const IngestionUtility = require('../../IngestionUtility');
 
 const scalityUtils = new IngestionUtility(scalityS3Client, ringS3Client);
 const ringS3CUtils = new IngestionUtility(ringS3Client);
-const ingestionSrcBucket = `ingestion-${process.env.HELM_NAMESPACE}`;
+const ingestionSrcBucket = process.env.RING_S3C_INGESTION_SRC_BUCKET_NAME;
 const srcLocation = process.env.RING_S3C_BACKEND_SOURCE_LOCATION;
 const location = `${srcLocation}:ingest`;
 // eslint-disable-next-line
@@ -20,7 +20,6 @@ let OBJ_KEY;
 
 describe('Ingesting existing data from RING S3C bucket', () => {
     beforeEach(() => {
-        console.log('INGESTION SOURCE BUCKET', ingestionSrcBucket);
         console.log('INGESTION SRC BUCKET ENV VARIABLE', process.env.RING_S3C_INGESTION_SRC_BUCKET_NAME);
         INGESTION_DEST_BUCKET = `ingestion-dest-bucket-${uuid()}`;
         KEY_PREFIX = `${ingestionSrcBucket}/${uuid()}`;
