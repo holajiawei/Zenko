@@ -19,7 +19,7 @@ let KEY_PREFIX;
 let OBJ_KEY;
 let OBJ_KEY_ZERO_BYTE;
 
-describe.only('Ingesting existing data from RING S3C bucket', () => {
+describe('Ingesting existing data from RING S3C bucket', () => {
     beforeEach(() => {
         INGESTION_DEST_BUCKET = `ingestion-dest-bucket-${uuid()}`;
         KEY_PREFIX = `${ingestionSrcBucket}/${uuid()}`;
