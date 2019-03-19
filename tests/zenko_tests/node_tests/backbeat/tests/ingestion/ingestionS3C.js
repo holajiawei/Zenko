@@ -20,6 +20,8 @@ let OBJ_KEY;
 
 describe('Ingesting existing data from RING S3C bucket', () => {
     beforeEach(() => {
+        console.log('INGESTION SOURCE BUCKET', ingestionSrcBucket);
+        console.log('INGESTION SRC BUCKET ENV VARIABLE', process.env.RING_S3C_INGESTION_SRC_BUCKET_NAME);
         INGESTION_DEST_BUCKET = `ingestion-dest-bucket-${uuid()}`;
         KEY_PREFIX = `${ingestionSrcBucket}/${uuid()}`;
         OBJ_KEY = `${KEY_PREFIX}/object-to-ingest-${uuid()}`;
