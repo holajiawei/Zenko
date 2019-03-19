@@ -19,6 +19,10 @@ let KEY_PREFIX;
 let OBJ_KEY;
 
 describe('Ingesting existing data from RING S3C bucket', () => {
+    before(done => {
+        ringS3CUtils.createBucket(ingestionSrcBucket, done);
+    });
+
     beforeEach(() => {
         console.log('INGESTION SRC BUCKET ENV VARIABLE', process.env.RING_S3C_INGESTION_SRC_BUCKET_NAME);
         INGESTION_DEST_BUCKET = `ingestion-dest-bucket-${uuid()}`;
