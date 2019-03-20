@@ -68,7 +68,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 INGESTION_DEST_BUCKET, location, next),
             next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
                 INGESTION_DEST_BUCKET, OBJ_KEY, next),
-            next => scalityUtils.putObjectTagging(ingestionSrcBucket,
+            next => ringS3CUtils.putObjectTagging(ingestionSrcBucket,
                 OBJ_KEY, undefined, next),
             next => scalityUtils.compareObjectTagsRINGS3C(ingestionSrcBucket,
                 INGESTION_DEST_BUCKET, OBJ_KEY, undefined,
