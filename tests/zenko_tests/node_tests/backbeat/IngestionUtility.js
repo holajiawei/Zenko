@@ -153,6 +153,7 @@ class IngestionUtility extends ReplicationUtility {
             }
             const srcData = data[1];
             const destData = data[2];
+            console.log('TAGS!', srcData.TagSet, destData.TagSet);
             assert.deepStrictEqual(srcData.TagSet, destData.TagSet);
             return cb();
         });

@@ -60,7 +60,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
         ], done);
     });
 
-    it.skip('should ingest object tags', done => {
+    it('should ingest object tags', done => {
         return async.series([
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, Buffer.alloc(1), next),
