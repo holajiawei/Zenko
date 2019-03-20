@@ -128,13 +128,11 @@ endif
 
 install-orbit-simulator: | builddir
 ifndef NO_SIM
-	$(V)$(GIT) clone -b bugfix/update-charts git@github.com:scality/orbit-simulator.git build/orbit-simulator && \
+	$(V)$(GIT) clone git@github.com:scality/orbit-simulator.git build/orbit-simulator && \
 	$(HELM) upgrade ciutil \
 		--namespace $(HELM_NAMESPACE) \
         --tiller-namespace $(HELM_NAMESPACE) \
         --install build/orbit-simulator/charts/orbit-simulator \
-		--set simulator.image.repository=jianqinwang/orbit-sim \
-		--set simulator.image.tag=bucketname \
         --set simulator.shim.cloudserver_release=$(ZENKO_HELM_RELEASE) \
         --wait $(shell ../eve/workers/ci_env.sh set)
 endif
