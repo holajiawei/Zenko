@@ -1,5 +1,4 @@
 const assert = require('assert');
-const crypto = require('crypto');
 const async = require('async');
 const uuid = require('uuid/v4');
 
@@ -14,53 +13,43 @@ const location = `${srcLocation}:ingest`;
 // eslint-disable-next-line
 const keyutf8 = `%EA%9D%8崰㈌㒈保轖䳷䀰⺩ቆ楪僷ꈅꓜ퇬枅࿷염곞召㸾⌙ꪊᆐ庍뉆䌗↎幐냂詴 끴鹲萯⇂쫤ᛩ꺶㖭簹릍铰᫫暨鿐魪셑蛃춧㡡竺뫁噛̷ᗰⷑ錜⑔痴䧫㾵᏷ำꎆ꼵껪멷㄀誕㳓腜쒃컹㑻鳃삚舿췈孨੦⮀Ǌ곓⵪꺼꜈嗼뫘悕錸瑺⁤⑬১㵀⡸Ҏ礄䧛졼⮦ٞ쫁퓡垻ㆩꝿ詀펉ᆙ舑䜾힑藪碙ꀎꂰ췊Ᏻ   㘺幽醛잯ද汧Ꟑꛒⶨ쪸숞헹㭔ꡔᘼ뺓ᡆ᡾ᑟ䅅퀭耓弧⢠⇙폪ް蛧⃪Ἔ돫ꕢ븥ヲ캂䝄쟐颺ᓾ둾Ұ껗礞ᾰ瘹蒯硳풛瞋襎奺熝妒컚쉴⿂㽝㝳駵鈚䄖戭䌸᫲ᇁ䙪鸮ᐴ稫ⶭ뀟ھ⦿䴳稉ꉕ捈袿놾띐✯伤䃫⸧ꠏ瘌틳藔ˋ㫣敀䔩㭘식↴⧵佶痊牌ꪌ搒꾛æᤈべ쉴挜炩⽍舘ꆗ줣徭Z䐨 敗羥誜嘳ֶꫜ걵ࣀ묟ኋ拃秷䨸菥䟆곘縧멀煣⧃⏶혣뎧邕⢄⭖陙䣎灏ꗛ僚䌁䠒䲎둘ꪎ傩쿌ᨌ뀻阥눉넠猌ㆯ㰢船戦跏灳蝒礯鞰諾벥煸珬㟑孫鞹Ƭꄹ孙ꢱ钐삺ᓧ鈠䁞〯蘼᫩헸ῖ"`;
 const INGESTION_TIMEOUT = 30000;
+const INGESTION_DEST_BUCKET = `ingestion-dest-bucket-${uuid()}`;
+const KEY_PREFIX = `${ingestionSrcBucket}/${uuid()}`;
+let OBJ_KEY;
+
 
 describe('OOB updates for RING S3C bucket', () => {
-    const hex = crypto.createHash('md5')
-        .update(Math.random().toString())
-        .digest('hex');
-    const ingestionDestBucket = `ingestion-dest-bucket-${Date.now()}`;
-    const keyPrefix = `${ingestionSrcBucket}/${hex}`;
-
     before(done => {
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
-        console.log("I'M NOT SUPPOSED TO BE HERE BUT OK");
         return scalityUtils.createIngestionBucket(
-            ingestionDestBucket, location, done);
+            INGESTION_DEST_BUCKET, location, done);
         });
 
     beforeEach(function beforeEach() {
-        this.currentTest.key =
-            `${keyPrefix}/object-to-ingest-${Date.now()}`;
+        OBJ_KEY = `${KEY_PREFIX}/object-to-ingest-${uuid()}`;
     });
 
     after(done => async.series([
-        next => scalityUtils.deleteVersionedBucket(ingestionDestBucket,
+        next => scalityUtils.deleteVersionedBucket(INGESTION_DEST_BUCKET,
             next),
-        next => ringS3CUtils.deleteAllVersions(ingestionSrcBucket, keyPrefix,
+        next => ringS3CUtils.deleteAllVersions(ingestionSrcBucket, KEY_PREFIX,
             next),
     ], done));
 
     it('should receive OOB update with an object', function itF(done) {
         return async.series([
-            next => ringS3CUtils.putObject(ingestionSrcBucket, this.test.key,
+            next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 Buffer.alloc(1), next),
             next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                ingestionDestBucket, this.test.key, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, next),
         ], done);
     });
 
     it('should receive OOB update with 0-byte object', function itF(done) {
         return async.series([
-            next => ringS3CUtils.putObject(ingestionSrcBucket, this.test.key,
+            next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),
             next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                ingestionDestBucket, this.test.key, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, next),
         ], done);
     });
 });

@@ -34,7 +34,6 @@ class ReplicationUtility {
     }
 
     _deleteVersionList(versionList, bucketName, cb) {
-        console.log('version list is', versionList);
         if (versionList.length < 1) {
             return cb();
         }
@@ -47,16 +46,7 @@ class ReplicationUtility {
                 }),
             },
         }
-        console.log('params for deleteObjects is', params);
-        return this.s3.deleteObjects(params, (err, data) => {
-            console.log('ran  deleteObjects, err and data', err, data);
-            return cb(err, data);
-        });
-        // async.each(versionList, (versionInfo, next) => {
-        //     console.log('deleting object', versionInfo);
-        //     return this.deleteObject(bucketName, versionInfo.Key,
-        //         versionInfo.VersionId, next);
-        //     }, cb);
+        return this.s3.deleteObjects(params, cb);
     }
 
     _deleteBlobList(blobList, containerName, cb) {
@@ -437,10 +427,7 @@ class ReplicationUtility {
     deleteVersionedBucket(bucketName, cb) {
         return async.series([
             next => this.deleteAllVersions(bucketName, undefined, next),
-            next => this.s3.listObjectVersions({ Bucket: bucketName }, (err, data) => {
-                console.log('list should be empty,', err, data);
-                return next();
-            }),
+            next => this.s3.listObjectVersions({ Bucket: bucketName }, next),
             next => this.s3.deleteBucket({ Bucket: bucketName }, next),
         ], err => cb(err));
     }
@@ -524,10 +511,7 @@ class ReplicationUtility {
             Bucket: bucketName,
             Key: key,
             VersionId: versionId,
-        }, (err, data) => {
-            console.log('err, data in deleting object', err, data);
-            return cb(err, data);
-        });
+        }, cb);
     }
 
     deleteBlob(containerName, blob, options, cb) {

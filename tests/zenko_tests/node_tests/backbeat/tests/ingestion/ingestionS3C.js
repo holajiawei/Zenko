@@ -1,5 +1,4 @@
 const assert = require('assert');
-const crypto = require('crypto');
 const async = require('async');
 const uuid = require('uuid/v4');
 
@@ -26,17 +25,12 @@ describe('Ingesting existing data from RING S3C bucket', () => {
     });
 
     afterEach(function afterEach(done) {
-        console.log('INGESTION_DEST_BUCKET', INGESTION_DEST_BUCKET);
         return async.parallel([
             next => scalityUtils.deleteVersionedBucket(
                 INGESTION_DEST_BUCKET, next),
             next => ringS3CUtils.deleteAllVersions(ingestionSrcBucket,
                 null, next),
         ], done);
-    });
-
-    after(done => {
-        rings3CUtils.s3.deleteBucket({ Bucket: ingestionSrcBucket }, done);
     });
 
     it('should ingest an object', done => {
@@ -61,22 +55,6 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 INGESTION_DEST_BUCKET, location, next),
             next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
                 INGESTION_DEST_BUCKET, OBJ_KEY, next),
-        ], done);
-    });
-
-    it('should ingest object tags', done => {
-        return async.series([
-            next => ringS3CUtils.putObject(ingestionSrcBucket,
-                OBJ_KEY, Buffer.alloc(1), next),
-            next => scalityUtils.createIngestionBucket(
-                INGESTION_DEST_BUCKET, location, next),
-            next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, next),
-            next => ringS3CUtils.putObjectTagging(ingestionSrcBucket,
-                OBJ_KEY, undefined, next),
-            next => scalityUtils.compareObjectTagsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, undefined,
-                undefined, next),
         ], done);
     });
 });

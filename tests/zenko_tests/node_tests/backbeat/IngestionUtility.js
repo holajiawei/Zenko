@@ -24,34 +24,24 @@ class IngestionUtility extends ReplicationUtility {
                     },
                 ],
             },
-        }, (err, data) => {
-            console.log('putObjectTagging', bucketName, key, data);
-            return cb(err, data);
-        });
+        }, cb);
     }
 
     getSourceObject(bucketName, objName, cb) {
         this.ringS3C.getObject({
             Bucket: bucketName,
             Key: objName,
-        }, (err, data) => {
-            console.log('getting source object', bucketName, objName, err);
-            return cb(err, data);
-        });
+        }, cb);
     }
 
     getDestObject(bucketName, objName, cb) {
         this.s3.getObject({
             Bucket: bucketName,
             Key: objName,
-        }, (err, data) => {
-            console.log('getting dest object', bucketName, objName);
-            return cb(err, data);
-        });
+        }, cb);
     }
 
     createIngestionBucket(bucketName, ingestionSrcLocation, cb) {
-        console.log('creating ingestion bucket', bucketName, ingestionSrcLocation);
         async.series([
             next => this.s3.createBucket({
                 Bucket: bucketName,
@@ -76,13 +66,11 @@ class IngestionUtility extends ReplicationUtility {
                 Bucket: bucketName,
                 Key: key,
             }, (err, data) => {
-                console.log('getting object,', bucketName, err);
                 if (err && err.code !== expectedCode) {
                     return callback(err);
                 }
                 status = err === null;
                 if (!status) {
-                    console.log('not ingested, trying again')
                     return setTimeout(callback, 2000);
                 }
                 return callback();
@@ -91,7 +79,6 @@ class IngestionUtility extends ReplicationUtility {
     }
 
     waitUntilDeleted(bucketName, key, cb) {
-        console.log('waiting for deletion', bucketName, key);
         let objectExists;
         const expectedCode = 'NoSuchKey';
         return async.doWhilst(callback =>
@@ -152,7 +139,6 @@ class IngestionUtility extends ReplicationUtility {
             }
             const srcData = data[1];
             const destData = data[2];
-            console.log('TAGS!', srcData.TagSet, destData.TagSet);
             assert.deepStrictEqual(srcData.TagSet, destData.TagSet);
             return cb();
         });
