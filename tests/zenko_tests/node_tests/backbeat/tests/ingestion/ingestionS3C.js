@@ -35,6 +35,10 @@ describe('Ingesting existing data from RING S3C bucket', () => {
         ], done);
     });
 
+    after(done => {
+        rings3CUtils.s3.deleteBucket({ Bucket: ingestionSrcBucket }, done);
+    });
+
     it('should ingest an object', done => {
         return async.series([
             // object

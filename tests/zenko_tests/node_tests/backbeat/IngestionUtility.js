@@ -69,7 +69,6 @@ class IngestionUtility extends ReplicationUtility {
     }
 
     waitUntilIngested(bucketName, key, versionId, cb) {
-        console.log('getting object', bucketName, key, versionId);
         let status;
         const expectedCode = 'NoSuchKey';
         return async.doWhilst(callback =>
@@ -77,7 +76,7 @@ class IngestionUtility extends ReplicationUtility {
                 Bucket: bucketName,
                 Key: key,
             }, (err, data) => {
-                console.log('getting object,',  err, data);
+                console.log('getting object,', bucketName, err);
                 if (err && err.code !== expectedCode) {
                     return callback(err);
                 }
