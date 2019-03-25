@@ -1,5 +1,5 @@
-# Zenko
-
+## Zenko
+#
 ![Zenko logo](res/zenko.io-logo-wide-bw.png)
 
 Zenko is  [Scality](http://www.scality.com/)’s open source multi-cloud data
