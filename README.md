@@ -1,4 +1,4 @@
-# Zenko
+## Zenko
 
 ![Zenko logo](res/zenko.io-logo-wide-bw.png)
 
