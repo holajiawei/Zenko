@@ -33,27 +33,71 @@ describe('Ingesting existing data from RING S3C bucket', () => {
     ], done));
 
     it('should ingest an object', done => {
-        return async.series([
+        return async.waterfall([
             // object
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, Buffer.alloc(1), next),
             // create ingestion bucket
-            next => scalityUtils.createIngestionBucket(
-                INGESTION_DEST_BUCKET, location, next),
+            (objData, next) => scalityUtils.createIngestionBucket(
+                INGESTION_DEST_BUCKET, location, err => {
+                    return next(err, objData);
+                }),
             // compare object
-            next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, next),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
         ], done);
     });
 
     it('should ingest a 0-byte object', done => {
-        return async.series([
+        return async.waterfall([
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, null, next),
-            next => scalityUtils.createIngestionBucket(
-                INGESTION_DEST_BUCKET, location, next),
-            next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, next),
+            (objData, next) => scalityUtils.createIngestionBucket(
+                INGESTION_DEST_BUCKET, location, err => {
+                    return next(err, objData);
+                }),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
         ], done);
     });
+
+    it('should ingest a tagged object', done => {
+        return async.waterfall([
+            next => ringS3CUtils.putObject(ingestionSrcBucket,
+                OBJ_KEY, null, next),
+            (objData, next) => ringS3CUtils.putObjectTagging(ingestionSrcBucket,
+                OBJ_KEY, objData.VersionId, next),
+            (objData, next) => scalityUtils.createIngestionBucket(
+                INGESTION_DEST_BUCKET, location, err => {
+                    return next(err, objData);
+                }),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                    return next(err, objData);
+                }),
+            (objData, next) => scalityUtils.compareObjectTagsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+        ], done);
+    });
+
+    it('should ingest all versions of an object', done => {
+        return async.waterfall([
+            next => ringS3CUtils.putObject(ingestionSrcBucket,
+                OBJ_KEY, null, next),
+            (objData1, next) => ringS3CUtils.putObject(ingestionSrcBucket,
+                OBJ_KEY, Buffer.alloc(1), (err, objData2) => {
+                    return next(err, objData1, objData2);
+                }),
+            (objData1, objData2, next) => scalityUtils.createIngestionBucket(
+                INGESTION_DEST_BUCKET, location, err => {
+                    return next(err, objData1, objData2);
+                }),
+            (objData1, objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, err => {
+                    return next(err, objData2);
+                }),
+            (objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.VersionId, next),
+        ], done);
+    });s
 });

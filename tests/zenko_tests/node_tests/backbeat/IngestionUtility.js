@@ -11,33 +11,19 @@ class IngestionUtility extends ReplicationUtility {
         this.ringS3C = ringS3C;
     }
 
-    putObjectTagging(bucketName, key, versionId, cb) {
-        this.s3.putObjectTagging({
-            Bucket: bucketName,
-            Key: key,
-            VersionId: versionId,
-            Tagging: {
-                TagSet: [
-                    {
-                        Key: 'object-tag-key',
-                        Value: 'object-tag-value',
-                    },
-                ],
-            },
-        }, cb);
-    }
-
-    getSourceObject(bucketName, objName, cb) {
+    getSourceObject(bucketName, objName, versionId, cb) {
         this.ringS3C.getObject({
             Bucket: bucketName,
             Key: objName,
+            VersionId: versionId,
         }, cb);
     }
 
-    getDestObject(bucketName, objName, cb) {
+    getDestObject(bucketName, objName, versionId, cb) {
         this.s3.getObject({
             Bucket: bucketName,
             Key: objName,
+            VersionId: versionId,
         }, cb);
     }
 
@@ -57,6 +43,7 @@ class IngestionUtility extends ReplicationUtility {
             this.s3.headObject({
                 Bucket: bucketName,
                 Key: key,
+                VersionId: versionId,
             }, err => {
                 if (err && err.code !== expectedCode) {
                     return callback(err);
@@ -88,12 +75,12 @@ class IngestionUtility extends ReplicationUtility {
         () => !objectsEmpty, cb);
     }
 
-    compareObjectsRINGS3C(srcBucket, destBucket, key, cb) {
+    compareObjectsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(destBucket, key, undefined,
+            next => this.waitUntilIngested(destBucket, key, versionId, undefined,
                 next),
-            next => this.getSourceObject(srcBucket, key, next),
-            next => this.getDestObject(destBucket, key, next),
+            next => this.getSourceObject(srcBucket, key, versionId, next),
+            next => this.getDestObject(destBucket, key, versionId, next),
         ], (err, data) => {
             if (err) {
                 return cb(err);
@@ -117,14 +104,13 @@ class IngestionUtility extends ReplicationUtility {
         });
     }
 
-    compareObjectTagsRINGS3C(srcBucket, destBucket, key, zenkoVersionId,
-        s3cVersionId, cb) {
+    compareObjectTagsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(srcBucket, key, zenkoVersionId, next),
+            next => this.waitUntilIngested(srcBucket, key, versionId, next),
             next => this._setS3Client(this.ringS3C).getObjectTagging(srcBucket,
-                key, zenkoVersionId, next),
+                key, versionId, next),
             next => this._setS3Client(this.s3).getObjectTagging(destBucket, key,
-                zenkoVersionId, next),
+                versionId, next),
         ], (err, data) => {
             if (err) {
                 return cb(err);
