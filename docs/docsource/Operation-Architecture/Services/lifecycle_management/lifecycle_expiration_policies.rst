@@ -4,14 +4,13 @@ Lifecycle Expiration Policies
 Cloud users can apply lifecycle expiration or transition rules (specified in 
 Amazon’s `AWS S3 API <https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html>`__)
 to buckets managed through Zenko. These rules are triggered after a defined
-time has passed since the object’s creation. For the purposes of lifecycle 
-management, an object is "created" when it is touched.
+time has passed since the object’s last modification. 
 
 Zenko supports expiration or transition of versioned or non-versioned objects,
 when a defined number of days has passed since those objects’ creation. This 
 enables automatic deletion of older versions of versioned objects to reclaim
 storage space. Zenko also supports triggering expiration or transition of 
-current versions on a date. This is currently feasible from the S3 API, but not
+the latest version on a date. This is currently feasible from the S3 API, but not
 using Orbit. Using Zenko from the command line or from Orbit, you can expire
 the current version of an object with a separate rule. For versioned buckets,
 lifecycle adds a delete marker automatically when a rule expiring a current

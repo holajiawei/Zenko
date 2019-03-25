@@ -589,7 +589,7 @@ The following lifecycle configuration specifies two rules, each with one
 action.
 
 -  The Transition action specifies objects with the “documents/” prefix
-      to transition to the Wasbi_cloud storage class 30 days after creation.
+      to transition to the wasabi_cloud storage class 30 days after creation.
 
 -  The Expiration action specifies objects with the “logs/” prefix to be
       deleted 365 days after creation.
@@ -605,7 +605,7 @@ action.
       <Status>Enabled</Status>
       <Transition>
         <Days>30</Days>
-        <StorageClass>Wasabi_cloud</StorageClass>
+        <StorageClass>wasabi_cloud</StorageClass>
       </Transition>
     </Rule>
     <Rule>
@@ -642,7 +642,7 @@ preceding lifecycle configuration to the “examplebucket” bucket.
       <Status>Enabled</Status>
       <Transition>
         <Days>30</Days>
-        <StorageClass>Wasabi_cloud</StorageClass>
+        <StorageClass>wasabi_cloud</StorageClass>
       </Transition>
     </Rule>
       <Rule>
@@ -680,7 +680,7 @@ versioning-enabled or versioning is suspended:
 
 -  The NoncurrentVersionTransition action specifies non-current versions
       of objects with the “documents/” prefix to transition to the
-      Wasabi_cloud storage class 30 days after they become non-current.
+      wasabi_cloud storage class 30 days after they become non-current.
 
 .. code::
 
@@ -703,7 +703,7 @@ versioning-enabled or versioning is suspended:
       <Status>Enabled</Status>
       <NoncurrentVersionTransition>
         <NoncurrentDays>30</NoncurrentDays>
-        <StorageClass>Wasabi_cloud</StorageClass>
+        <StorageClass>wasabi_cloud</StorageClass>
       </NoncurrentVersionTransition>
     </Rule>
   </LifeCycleConfiguration>
@@ -739,7 +739,7 @@ preceding lifecycle configuration to the \`examplebucket\` bucket.
       <Status>Enabled</Status>
       <NoncurrentVersionTransition>
         <NoncurrentDays>0</NoncurrentDays>
-        <StorageClass>Wasabi_cloud</StorageClass>
+        <StorageClass>wasabi_cloud</StorageClass>
       </NoncurrentVersionTransition>
     </Rule>
   </LifeCycleConfiguration>
