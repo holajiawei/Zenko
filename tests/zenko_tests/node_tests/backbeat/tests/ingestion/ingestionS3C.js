@@ -99,5 +99,38 @@ describe('Ingesting existing data from RING S3C bucket', () => {
             (objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
                 INGESTION_DEST_BUCKET, OBJ_KEY, objData2.VersionId, next),
         ], done);
-    });s
+    });
+
+    it('should ingest an MPU object: single 0-byte part', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeSinglePartMPU(ingestionSrcBucket, OBJ_KEY, 0, next),
+            (mpuData, next) => scalityUtils.createIngestionBucket(INGESTION_DEST_BUCKET, location, err => {
+                return next(err, mpuData);
+            }),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+        ], done);
+    });
+
+    it('should ingest an MPU object: single 1-byte part', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeSinglePartMPU(ingestionSrcBucket, OBJ_KEY, 1, next),
+            (mpuData, next) => scalityUtils.createIngestionBucket(INGESTION_DEST_BUCKET, location, err => {
+                return next(err, mpuData);
+            }),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+        ], done);
+    });
+
+    it('should ingest an MPU object: 2 parts', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeMPUAWS(ingestionSrcBucket, OBJ_KEY, 2 next),
+            (mpuData, next) => scalityUtils.createIngestionBucket(INGESTION_DEST_BUCKET, location, err => {
+                return next(err, mpuData);
+            }),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+        ], done);
+    });
 });

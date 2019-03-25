@@ -34,21 +34,48 @@ describe('OOB updates for RING S3C bucket', () => {
             next),
     ], done));
 
-    it('should receive OOB update with an object', function itF(done) {
-        return async.series([
+    it('should receive OOB update with an object', done => {
+        return async.waterfall([
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 Buffer.alloc(1), next),
-            next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, next),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
         ], done);
     });
 
-    it('should receive OOB update with 0-byte object', function itF(done) {
-        return async.series([
+    it('should receive OOB update with 0-byte object', done => {
+        return async.waterfall([
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),
-            next => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, next),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+        ], done);
+    });
+
+    it('should receive OOB update with tagged object', done => {
+        return async.waterfall([
+            next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
+                null, next),
+            (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                    return next(err, objData);
+                }),
+            (objData, next) => ringS3CUtils.putObjectTagging(ingestionSrcBucket,
+                OBJ_KEY, objData.VersionId, next),
+            (tagObjData, next) => ringS3CUtils.compareObjectTagsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, tagObjData.VersionId, next),
+        ], done);
+    });
+
+    it('should receive OOB update with all versions of an object', done => {
+        return async.waterfall([
+            next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
+                null, next),
+            (objData1, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, next),
+            next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY, Buffer.alloc(1), next),
+            (objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.Versionid, next),
         ], done);
     });
 });
