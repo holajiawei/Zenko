@@ -125,7 +125,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
 
     it('should ingest an MPU object: 2 parts', done => {
         return async.waterfall([
-            next => ringS3CUtils.completeMPUAWS(ingestionSrcBucket, OBJ_KEY, 2 next),
+            next => ringS3CUtils.completeMPUAWS(ingestionSrcBucket, OBJ_KEY, 2, next),
             (mpuData, next) => scalityUtils.createIngestionBucket(INGESTION_DEST_BUCKET, location, err => {
                 return next(err, mpuData);
             }),
