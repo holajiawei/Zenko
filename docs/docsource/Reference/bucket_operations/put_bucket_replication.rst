@@ -58,10 +58,10 @@ status, and details about the destination.
 The destination details include the bucket in which to store replicas
 and optional storage classes to use to store the replicas.
 
-Zenko only acts on rules with an Enabled status. The configuration also
-identifies an IAM role for Zenko to assume for copying objects. This role
-must have sufficient permissions to read objects from the source bucket
-and replicate these objects to the target bucket.
+Zenko only acts on rules with an Enabled status. Zenko does not support IAM 
+roles; instead, Zenko pre-creates service accounts, one for each service
+(Replication, Lifecycle, Ingestion, Garbage Collection, Metadata Search).
+Each service uses keys generated for its own account to execute an operation.
 
 .. code::
 

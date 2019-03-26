@@ -20,8 +20,7 @@ specifying a version ID.
 Bucket lifecycle characteristics inhere to each bucket. Zenko’s lifecycle
 management feature enforces, but does not set these characteristics. When
 lifecycle management is enabled, the host cloud enforces buckets’ lifecycle
-rules. If CRR operation is enabled, Zenko replicates the expiration or 
-transition rules to all backup clouds.
+rules. 
 
 To configure bucket lifecycle, follow the AWS S3 Lifecycle Configuration
 Element syntax described in
