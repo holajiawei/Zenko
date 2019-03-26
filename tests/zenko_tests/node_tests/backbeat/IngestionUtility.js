@@ -107,9 +107,9 @@ class IngestionUtility extends ReplicationUtility {
     compareObjectTagsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
             next => this.waitUntilIngested(srcBucket, key, versionId, next),
-            next => this._setS3Client(this.ringS3C).getObjectTagging(srcBucket,
+            next => this._setS3Client(ringS3Client).getObjectTagging(srcBucket,
                 key, versionId, next),
-            next => this._setS3Client(this.s3).getObjectTagging(destBucket, key,
+            next => this._setS3Client(scalityS3Client).getObjectTagging(destBucket, key,
                 versionId, next),
         ], (err, data) => {
             if (err) {
