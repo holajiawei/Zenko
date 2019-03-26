@@ -77,7 +77,7 @@ class IngestionUtility extends ReplicationUtility {
 
     compareObjectsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(destBucket, key, versionId, undefined,
+            next => this.waitUntilIngested(destBucket, key, versionId,
                 next),
             next => this.getSourceObject(srcBucket, key, versionId, next),
             next => this.getDestObject(destBucket, key, versionId, next),
