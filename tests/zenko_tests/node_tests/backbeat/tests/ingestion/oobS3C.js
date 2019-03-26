@@ -52,7 +52,7 @@ describe('OOB updates for RING S3C bucket', () => {
         ], done);
     });
 
-    it('should receive OOB update with tagged object', done => {
+    it.only('should receive OOB update with tagged object', done => {
         return async.waterfall([
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),

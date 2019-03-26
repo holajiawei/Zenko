@@ -61,7 +61,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
         ], done);
     });
 
-    it('should ingest a tagged object', done => {
+    it.only('should ingest a tagged object', done => {
         return async.waterfall([
             next => ringS3CUtils.putObject(ingestionSrcBucket,
                 OBJ_KEY, null, next),
@@ -69,14 +69,19 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 OBJ_KEY, objData.VersionId, next),
             (objData, next) => scalityUtils.createIngestionBucket(
                 INGESTION_DEST_BUCKET, location, err => {
+                    console.log('successfully created ingestion bucket');
                     return next(err, objData);
                 }),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
                 INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                    console.log('comparing objects for rings3c');
                     return next(err, objData);
                 }),
             (objData, next) => scalityUtils.compareObjectTagsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                    console.log('comparing object tags for rings3c');
+                    return next(err);
+                }),
         ], done);
     });
 
