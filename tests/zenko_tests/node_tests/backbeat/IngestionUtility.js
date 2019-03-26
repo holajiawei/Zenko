@@ -37,6 +37,7 @@ class IngestionUtility extends ReplicationUtility {
     }
 
     waitUntilIngested(bucketName, key, versionId, cb) {
+        console.log('wait until ingested!', bucketName, key, versionId);
         let status;
         const expectedCode = 'NotFound';
         return async.doWhilst(callback =>
@@ -106,18 +107,29 @@ class IngestionUtility extends ReplicationUtility {
 
     compareObjectTagsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(srcBucket, key, versionId, next),
+            next => this.waitUntilIngested(srcBucket, key, versionId, err => {
+                console.log('wait until Ingested');
+                return next(err, data);
+            }),
             next => this._setS3Client(ringS3Client).getObjectTagging(srcBucket,
-                key, versionId, next),
+                key, versionId, (err, data) => {
+                    console.log('get object tagging for ring object', data);
+                    return next(err, data);
+                }),
             next => this._setS3Client(scalityS3Client).getObjectTagging(destBucket, key,
-                versionId, next),
+                versionId, (err, data) => {
+                    console.log('get object tagging for scality object');
+                    return next(err, data);
+                }),
         ], (err, data) => {
+            console.log('async series in compare object tags complete');
             if (err) {
                 return cb(err);
             }
             const srcData = data[1];
             const destData = data[2];
             assert.deepStrictEqual(srcData.TagSet, destData.TagSet);
+            assert.strictEqual(srcData.VersionId, destData.VersionId);
             return cb();
         });
     }

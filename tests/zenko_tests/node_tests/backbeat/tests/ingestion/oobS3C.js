@@ -78,4 +78,12 @@ describe('OOB updates for RING S3C bucket', () => {
                 INGESTION_DEST_BUCKET, OBJ_KEY, objData2.Versionid, next),
         ], done);
     });
+
+    it('should receive OOB update with MPU object: single 0-byte part', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeSinglePartMPU(ingestionSrcBucket, OBJ_KEY, 0, next),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.versionId, next),
+        ], done);
+    });
 });
