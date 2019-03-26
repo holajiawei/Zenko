@@ -107,7 +107,7 @@ class IngestionUtility extends ReplicationUtility {
 
     compareObjectTagsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(srcBucket, key, versionId, err => {
+            next => this.waitUntilIngested(destBucket, key, versionId, err => {
                 console.log('wait until Ingested');
                 return next(err, data);
             }),
