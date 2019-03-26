@@ -36,6 +36,7 @@ SLACK_API_BASE = 'https://slack.com/api/%s'
 # SLACK_CHAN = 'CFYM0GWJ0' # Dev channel
 SLACK_CHAN_DEVOPS = 'CFCCE4X7F' # sf-devops
 SLACK_CHAN_HIPPO = 'CFD81UFEK'
+# SLACK_CHAN = 'CFYM0GWJ0' # Dev channel
 
 CROSSPOST_TO_HIPPO = os.environ.get('CROSSPOST_TO_HIPPO', '').strip() != ''
 
@@ -138,7 +139,9 @@ class EveClient:
                     prop01_name='report_build_name',
                     prop01_value=BUILD_NAME,
                     prop02_name='report_build_msg_ts',
-                    prop02_value=BUILD_MSG_TS
+                    prop02_value=BUILD_MSG_TS,
+                    prop03_name='crosspost-to-hippo',
+                    prop03_value=str(CROSSPOST_TO_HIPPO)
                 ),
                 jsonrpcmethod='force',
                 method='POST'
