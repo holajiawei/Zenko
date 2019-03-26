@@ -44,7 +44,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 }),
             // compare object
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, next),
         ], done);
     });
 
@@ -57,7 +57,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                     return next(err, objData);
                 }),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, next),
         ], done);
     });
 
@@ -73,7 +73,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                     return next(err, objData);
                 }),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, err => {
                     console.log('comparing objects for rings3c');
                     return next(err, objData);
                 }),
@@ -98,11 +98,28 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                     return next(err, objData1, objData2);
                 }),
             (objData1, objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, err => {
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, undefined, err => {
                     return next(err, objData2);
                 }),
             (objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.VersionId, undefined, next),
+        ], done);
+    });
+
+    it('should ingest delete markers on object', done => {
+        return async.waterfall([
+            next => ringS3CUtils.putObject(ingestionSrcBucket,
+                OBJ_KEY, null, next),
+            (objData, next) => ringS3CUtils.deleteObject(ingestionSrcBucket,
+                OBJ_KEY, null, (err, delData) => {
+                    return next(err, objData, delData);
+                }),
+            (objData, delData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, err => {
+                    return next(err, delData);
+                }),
+            (delData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, delData.VersionId, 'DeleteMarker', undefined, next),
         ], done);
     });
 
@@ -113,7 +130,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 return next(err, mpuData);
             }),
             (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, undefined, next),
         ], done);
     });
 
@@ -124,7 +141,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 return next(err, mpuData);
             }),
             (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, undefined, next),
         ], done);
     });
 
@@ -135,7 +152,7 @@ describe('Ingesting existing data from RING S3C bucket', () => {
                 return next(err, mpuData);
             }),
             (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, undefined, next),
         ], done);
     });
 });

@@ -76,7 +76,7 @@ class IngestionUtility extends ReplicationUtility {
         () => !objectsEmpty, cb);
     }
 
-    compareObjectsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
+    compareObjectsRINGS3C(srcBucket, destBucket, key, versionId, optionalField, cb) {
         return async.series([
             next => this.waitUntilIngested(destBucket, key, versionId,
                 next),
@@ -97,9 +97,8 @@ class IngestionUtility extends ReplicationUtility {
             assert.strictEqual(srcData.VersionId, destData.VersionId);
             assert.strictEqual(srcData.LastModified.toString(),
                 destData.LastModified.toString());
-            if (srcData.WebsiteRedirectLocation) {
-                assert.strictEqual(srcData.WebsiteRedirectLocation,
-                    destData.WebsiteRedirectLocation);
+            if (optionalField) {
+                assert.strictEqual(srcData[optionalField], destData[optionalField]);
             }
             return cb();
         });
@@ -107,7 +106,7 @@ class IngestionUtility extends ReplicationUtility {
 
     compareObjectTagsRINGS3C(srcBucket, destBucket, key, versionId, cb) {
         return async.series([
-            next => this.waitUntilIngested(destBucket, key, versionId, err => {
+            next => this.waitUntilIngested(destBucket, key, versionId, (err, data) => {
                 console.log('wait until Ingested');
                 return next(err, data);
             }),

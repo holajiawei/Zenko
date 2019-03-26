@@ -39,7 +39,7 @@ describe('OOB updates for RING S3C bucket', () => {
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 Buffer.alloc(1), next),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, next),
         ], done);
     });
 
@@ -48,7 +48,7 @@ describe('OOB updates for RING S3C bucket', () => {
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, next),
         ], done);
     });
 
@@ -57,7 +57,7 @@ describe('OOB updates for RING S3C bucket', () => {
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),
             (objData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, err => {
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData.VersionId, undefined, err => {
                     return next(err, objData);
                 }),
             (objData, next) => ringS3CUtils.putObjectTagging(ingestionSrcBucket,
@@ -72,10 +72,10 @@ describe('OOB updates for RING S3C bucket', () => {
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY,
                 null, next),
             (objData1, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData1.VersionId, undefined, next),
             next => ringS3CUtils.putObject(ingestionSrcBucket, OBJ_KEY, Buffer.alloc(1), next),
             (objData2, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.Versionid, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, objData2.Versionid, undefined, next),
         ], done);
     });
 
@@ -83,7 +83,23 @@ describe('OOB updates for RING S3C bucket', () => {
         return async.waterfall([
             next => ringS3CUtils.completeSinglePartMPU(ingestionSrcBucket, OBJ_KEY, 0, next),
             (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
-                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.versionId, next),
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.versionId, undefined, next),
+        ], done);
+    });
+
+    it('should receive OOB updated with MPU object: single 1-byte part', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeSinglePartMPU(ingestionSrcBucket, OBJ_KEY, 1, next),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, undefined, next),
+        ], done);
+    });
+
+    it('should ingest an MPU object: 2 parts', done => {
+        return async.waterfall([
+            next => ringS3CUtils.completeMPUAWS(ingestionSrcBucket, OBJ_KEY, 2, next),
+            (mpuData, next) => scalityUtils.compareObjectsRINGS3C(ingestionSrcBucket,
+                INGESTION_DEST_BUCKET, OBJ_KEY, mpuData.VersionId, undefined, next),
         ], done);
     });
 });
