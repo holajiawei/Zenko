@@ -24,8 +24,8 @@ S3 API
 ------
 
 Zenko supports a limited set of S3 API commands. For a comprehensive
-listing of supported S3 commands, see the *Scality Zenko Enterprise Reference
-Manual (v. 1.0)*.
+listing of supported S3 commands, see the *Zenko Enterprise Reference
+Manual*.
 
 Setup
 ~~~~~

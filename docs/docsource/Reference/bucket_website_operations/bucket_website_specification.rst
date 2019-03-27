@@ -3,8 +3,8 @@
 Bucket Website Specification
 ============================
 
-Scality Zenko Enterprise implements the `AWS S3 Bucket Website
-APIs <http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>`__
+Zenko implements the `AWS S3 Bucket Website APIs
+<http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>`__
 per the AWS specifications. This makes the objects accessible through a
 bucket website.
 
